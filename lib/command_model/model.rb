@@ -52,6 +52,19 @@ module CommandModel
       command
     end
     
+    def self.success
+      new.tap do |instance|
+        instance.execution_attempted!
+      end
+    end
+    
+    def self.failure(error)
+      new.tap do |instance|
+        instance.execution_attempted!
+        instance.errors.add(:base, error)
+      end
+    end
+    
     def initialize(attributes={})
       @typecast_errors = {}
       

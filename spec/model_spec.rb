@@ -101,6 +101,24 @@ describe CommandModel::Model do
       example_command.should_not be_success
     end
   end
+  
+  describe "self.success" do
+    it "creates a successful command model" do
+      response = ExampleCommand.success
+      response.should be_kind_of(ExampleCommand)
+      response.should be_success
+    end
+  end
+  
+  describe "self.failure" do
+    it "creates a command model with an error" do
+      response = ExampleCommand.failure "something broke"
+      response.should be_kind_of(ExampleCommand)
+      response.should_not be_success
+      response.errors[:base].should eq(["something broke"])
+    end
+  end
+  
 
   describe "initialize" do
     it "assigns attributes" do
