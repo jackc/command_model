@@ -6,6 +6,26 @@ module CommandModel
     
     validate :include_typecasting_errors
     
+    # Parameter requires one or more attributes as its first parameter(s).
+    # It accepts an options hash as its last parameter.
+    #
+    # ==== Options
+    #
+    # * typecast - The type of object to typecast to. Typecasts are built-in
+    #   for integer, float, and date. Additional typecasts can be defined
+    #   by defining a method typecast_#{name} for a typecast of #{name}.
+    # * validations - All other options are considered validations and are
+    #   passed to ActiveModel::Validates.validates
+    #
+    # ==== Examples
+    #
+    #   parameter :gender
+    #   parameter :name, :presence => true
+    #   parameter :birthdate, :typecast => :date
+    #   parameter :height, :weight,
+    #     :typecast => :integer,
+    #     :presence => true,
+    #     :numericality => { :greater_than_or_equal_to => 0 }
     def self.parameter(*args)
       options = args.last.kind_of?(Hash) ? args.pop.clone : {}
       typecast = options.delete(:typecast)
@@ -40,6 +60,20 @@ module CommandModel
       END_EVAL
     end
     
+    # Executes a block of code if the command model is valid.
+    #
+    # Accepts either a command model or a hash of attributes with which to
+    # create a new command model.
+    #
+    # ==== Examples
+    #
+    #   RenameUserCommand.execute(:login => "john") do |command|
+    #     if allowed_to_rename_user?
+    #       self.login = command.login
+    #     else
+    #       command.errors.add :base, "not allowed to rename"
+    #     end
+    #   end
     def self.execute(attributes_or_command)
       command = if attributes_or_command.kind_of? self
         attributes_or_command
@@ -52,12 +86,19 @@ module CommandModel
       command
     end
     
+    # Quickly create a successful command object. This is used when the
+    # command takes no parameters to want to take advantage of the success?
+    # and errors properties of a command object.
     def self.success
       new.tap do |instance|
         instance.execution_attempted!
       end
     end
     
+    # Quickly create a failed command object. Requires one parameter with
+    # the description of what went wrong. This is used when the
+    # command takes no parameters to want to take advantage of the success?
+    # and errors properties of a command object.
     def self.failure(error)
       new.tap do |instance|
         instance.execution_attempted!
@@ -65,6 +106,7 @@ module CommandModel
       end
     end
     
+    # Accepts an attributes hash
     def initialize(attributes={})
       @typecast_errors = {}
       
@@ -75,7 +117,7 @@ module CommandModel
     
     # Record that an attempt was made to execute this command whether or not
     # it was successful.
-    def execution_attempted! #:nodoc
+    def execution_attempted! #:nodoc:
       @execution_attempted = true
     end
     
@@ -89,6 +131,7 @@ module CommandModel
       execution_attempted? && errors.empty?
     end
     
+    #:nodoc:
     def persisted?
       false
     end
