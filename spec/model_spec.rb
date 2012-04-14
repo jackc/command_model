@@ -36,8 +36,16 @@ describe CommandModel::Model do
       klass.new.methods.should include(:bar=)
     end
     
-    it "accepts multiple attributes with options" do
+    it "accepts multiple attributes with typecast" do
       klass.parameter :foo, :bar, :typecast => "integer"
+      klass.new.methods.should include(:foo)
+      klass.new.methods.should include(:foo=)
+      klass.new.methods.should include(:bar)
+      klass.new.methods.should include(:bar=)
+    end
+    
+    it "accepts multiple attributes with validation" do
+      klass.parameter :foo, :bar, :presence => true
       klass.new.methods.should include(:foo)
       klass.new.methods.should include(:foo=)
       klass.new.methods.should include(:bar)
@@ -202,5 +210,13 @@ describe CommandModel::Model do
     example_command.should_not be_valid
     example_command.errors["name"].should be
   end
+  
+  it "does not include typecasting error in validations if the attribute already has an error" do
+    invalid_example_command.instance_variable_get(:@typecast_errors)["name"] = "integer"
+    invalid_example_command.should_not be_valid
+    invalid_example_command.errors["name"].should be
+    invalid_example_command.errors["name"].find { |e| e =~ /integer/ }.should_not be
+  end
+  
   
 end

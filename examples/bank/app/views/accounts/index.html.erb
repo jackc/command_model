@@ -1,0 +1,22 @@
+<h1>Accounts</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Balance</th>    
+      <th></th>    
+      <th></th>    
+    </tr>  
+  </thead>
+  <% @accounts.each do |a| %>
+    <tr>
+      <td><%= a.name %></td>
+      <td><%= a.balance %></td>
+      <td><%= link_to "Deposit", account_deposit_form_path(a) %></td>
+      <td><%= link_to "Withdraw", account_withdraw_form_path(a) %></td>
+    </tr>
+  <% end %>
+</table>
+
+<%= link_to "Transfer", account_transfer_path %>

@@ -1,0 +1,23 @@
+<p><%= link_to "Back to all accounts", root_path %></p>
+
+<h1>Deposit in <%= @account.name %>'s Account</h1>
+
+<p>Balance: <%= @account.balance %></p>
+
+<% if @deposit.errors.present? %>
+  <ul>
+    <% @deposit.errors.full_messages.each do |msg| %>
+      <li><%= msg %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<%= form_for @deposit, :as => :deposit, :url => account_deposit_path(@account) do |f| %>
+  <%= f.label :amount %>
+  <%= f.text_field :amount %>
+  <%= f.submit "Deposit" %>
+<% end %>
+
+
+
+

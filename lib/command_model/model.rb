@@ -4,8 +4,6 @@ module CommandModel
     include ActiveModel::Conversion
     extend ActiveModel::Naming
     
-    validate :include_typecasting_errors
-    
     # Parameter requires one or more attributes as its first parameter(s).
     # It accepts an options hash as its last parameter.
     #
@@ -38,8 +36,7 @@ module CommandModel
         else
           attr_writer name
         end
-        
-        validates name, options if options.present?
+        validates name, options.clone if options.present? # clone options because validates mutates the hash :(
       end
     end
     
@@ -157,8 +154,20 @@ module CommandModel
       
       def include_typecasting_errors
         @typecast_errors.each do |attribute, target_type|
-          errors.add attribute, "is not a #{target_type}"
+          unless errors[attribute].present?
+            errors.add attribute, "is not a #{target_type}"
+          end
         end
+      end
+      
+      # overriding this to make typecasting errors run at the end so they will
+      # not run if there is already an error on the column. Otherwise, when
+      # typecasting to an integer and using validates_numericality_of two
+      # errors will be generated.
+      def run_validations!
+        super
+        include_typecasting_errors
+        errors.empty?
       end
   end
 end

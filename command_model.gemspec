@@ -4,7 +4,7 @@ require File.expand_path('../lib/command_model/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Jack Christensen"]
   gem.email         = ["jack@jackchristensen.com"]
-  gem.description   = %q{CommandModel integrates Rails validations with command objects}
+  gem.description   = %q{CommandModel - when update_attributes isn't enough.}
   gem.summary       = %q{CommandModel integrates Rails validations with command objects. This allows errors from command execution to easily be handled with the familiar Rails validation system.}
   gem.homepage      = "https://github.com/JackC/command_model"
 
