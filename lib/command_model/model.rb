@@ -43,6 +43,7 @@ module CommandModel
       end
     end
 
+    # Returns array of all parameters defined for class
     def self.parameters
       @parameters ||= []
     end
