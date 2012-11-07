@@ -3,6 +3,8 @@ module CommandModel
     include ActiveModel::Validations
     include ActiveModel::Conversion
     extend ActiveModel::Naming
+
+    Parameter = Struct.new(:name, :typecast, :validations)
     
     # Parameter requires one or more attributes as its first parameter(s).
     # It accepts an options hash as its last parameter.
@@ -37,7 +39,12 @@ module CommandModel
           attr_writer name
         end
         validates name, options.clone if options.present? # clone options because validates mutates the hash :(
+        parameters.push Parameter.new name, typecast, options
       end
+    end
+
+    def self.parameters
+      @parameters ||= []
     end
     
     def self.attr_typecasting_writer(name, target_type) #:nodoc

@@ -66,7 +66,21 @@ describe CommandModel::Model do
       instance.errors[:name].should be_present
     end    
   end
-  
+
+  describe "self.parameters" do
+    it "returns all parameters in class" do
+      klass = Class.new(CommandModel::Model)
+      klass.parameter :name, presence: true
+      klass.parameter :birthdate, typecast: :date, presence: true
+
+      expected = [
+        CommandModel::Model::Parameter.new(:name, nil, { presence: true }),
+        CommandModel::Model::Parameter.new(:birthdate, :date, { presence: true })
+      ]
+
+      expect(klass.parameters).to eq(expected)
+    end
+  end
 
   describe "self.execute" do
     it "accepts object of same kind and returns it" do
