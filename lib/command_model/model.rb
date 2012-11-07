@@ -111,11 +111,19 @@ module CommandModel
       end
     end
     
-    # Accepts an attributes hash
-    def initialize(attributes={})
+    # Accepts a parameters hash or another of the same class. If another
+    # instance of the same class is passed in then the parameters are copied
+    # to the new object.
+    def initialize(parameters_or_other_instance={})
       @typecast_errors = {}
-      
-      attributes.each do |k,v|
+
+      parameters = if parameters_or_other_instance.respond_to?(:parameters) 
+        parameters_or_other_instance.parameters
+      else
+        parameters_or_other_instance
+      end
+
+      parameters.each do |k,v|
         send "#{k}=", v
       end
     end

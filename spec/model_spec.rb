@@ -143,9 +143,15 @@ describe CommandModel::Model do
   
 
   describe "initialize" do
-    it "assigns attributes" do
+    it "assigns parameters from hash" do
       m = ExampleCommand.new :name => "John"
       m.name.should eq("John")
+    end
+
+    it "assigns parameters from other CommandModel" do
+      other = ExampleCommand.new :name => "John"
+      m = ExampleCommand.new other
+      expect(m.name).to eq(other.name)
     end
   end
   
