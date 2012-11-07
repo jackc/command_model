@@ -114,18 +114,9 @@ module CommandModel
     # Accepts a parameters hash or another of the same class. If another
     # instance of the same class is passed in then the parameters are copied
     # to the new object.
-    def initialize(parameters_or_other_instance={})
+    def initialize(parameters={})
       @typecast_errors = {}
-
-      parameters = if parameters_or_other_instance.respond_to?(:parameters) 
-        parameters_or_other_instance.parameters
-      else
-        parameters_or_other_instance
-      end
-
-      parameters.each do |k,v|
-        send "#{k}=", v
-      end
+      set_parameters parameters
     end
     
     # Record that an attempt was made to execute this command whether or not
@@ -150,6 +141,14 @@ module CommandModel
         hash[parameter.name] = send(parameter.name)
       end
     end
+
+    # Sets parameter(s) from hash or instance of same class
+    def set_parameters(hash_or_instance)
+      parameters = extract_parameters_from_hash_or_instance(hash_or_instance)
+      parameters.each do |k,v|
+        send "#{k}=", v
+      end
+    end
     
     #:nodoc:
     def persisted?
@@ -157,6 +156,14 @@ module CommandModel
     end
     
     private
+      def extract_parameters_from_hash_or_instance(hash_or_instance)
+        if hash_or_instance.respond_to?(:parameters) 
+          hash_or_instance.parameters
+        else
+          hash_or_instance
+        end
+      end
+
       def typecast_integer(value)
         Integer(value) rescue nil
       end

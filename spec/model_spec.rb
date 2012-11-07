@@ -2,6 +2,7 @@ require 'spec_helper'
 
 class ExampleCommand < CommandModel::Model
   parameter :name, :presence => true
+  parameter :title
 end
 
 describe CommandModel::Model do
@@ -188,6 +189,20 @@ describe CommandModel::Model do
       expected = { name: "John", birthdate: Date.new(1980,1,1) }
       instance = klass.new expected
       expect(instance.parameters).to eq(expected)
+    end
+  end
+
+  describe "set_parameters" do
+    it "sets parameters from hash with symbol keys" do
+      example_command.set_parameters name: "Bill", title: "Boss"
+      expect(example_command.name).to eq("Bill")
+      expect(example_command.title).to eq("Boss")
+    end
+
+    it "sets parameters from hash with string keys" do
+      example_command.set_parameters "name" => "Bill", "title" => "Boss"
+      expect(example_command.name).to eq("Bill")
+      expect(example_command.title).to eq("Boss")
     end
   end
   
