@@ -135,6 +135,13 @@ module CommandModel
     def success?
       execution_attempted? && errors.empty?
     end
+
+    # Returns hash of all parameter names and values
+    def parameters
+      self.class.parameters.each_with_object({}) do |parameter, hash|
+        hash[parameter.name] = send(parameter.name)
+      end
+    end
     
     #:nodoc:
     def persisted?

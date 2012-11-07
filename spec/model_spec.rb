@@ -172,6 +172,18 @@ describe CommandModel::Model do
       example_command.success?.should eq(true)
     end
   end
+
+  describe "parameters" do
+    it "is a hash of all parameter name and values" do
+      klass = Class.new(CommandModel::Model)
+      klass.parameter :name, presence: true
+      klass.parameter :birthdate, typecast: :date, presence: true
+
+      expected = { name: "John", birthdate: Date.new(1980,1,1) }
+      instance = klass.new expected
+      expect(instance.parameters).to eq(expected)
+    end
+  end
   
   describe "typecast_integer" do
     it "casts to integer when valid string" do
