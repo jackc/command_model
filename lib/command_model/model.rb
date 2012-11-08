@@ -79,16 +79,14 @@ module CommandModel
     #       command.errors.add :base, "not allowed to rename"
     #     end
     #   end
-    def self.execute(attributes_or_command)
+    def self.execute(attributes_or_command, &block)
       command = if attributes_or_command.kind_of? self
         attributes_or_command
       else
         new(attributes_or_command)
       end
       
-      yield command if command.valid?
-      command.execution_attempted!   
-      command
+      command.call &block
     end
     
     # Quickly create a successful command object. This is used when the
@@ -118,7 +116,24 @@ module CommandModel
       @typecast_errors = {}
       set_parameters parameters
     end
-    
+
+    # Executes the command by calling the method +execute+ if the validations
+    # pass.
+    def call(&block)
+      execute(&block) if valid?
+      execution_attempted!
+      self
+    end
+
+    # Performs the actual command execution. It does not test if the command
+    # parameters are valid. Typically, +call+ should be called instead of
+    # calling +execute+ directly.
+    #
+    # +execute+ should be overridden in descendent classes
+    def execute
+      yield self if block_given?
+    end
+
     # Record that an attempt was made to execute this command whether or not
     # it was successful.
     def execution_attempted! #:nodoc:

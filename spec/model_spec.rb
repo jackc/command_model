@@ -155,6 +155,41 @@ describe CommandModel::Model do
       expect(m.name).to eq(other.name)
     end
   end
+
+  describe "call" do
+    context "when valid" do
+      it "calls execute" do
+        example_command.should_receive(:execute)
+        example_command.call
+      end
+
+      it "returns self" do
+        expect(example_command.call).to eq(example_command)
+      end
+    end
+
+    context "when invalid" do
+      it "does not call execute" do
+        invalid_example_command.should_not_receive(:execute)
+        invalid_example_command.call
+      end
+
+      it "returns self" do
+        expect(invalid_example_command.call).to eq(invalid_example_command)
+      end
+    end
+  end
+
+  describe "execute" do
+    it "yields to block with self as argument" do
+      block_arg = nil
+      example_command.execute do |command|
+        block_arg = command
+      end
+
+      expect(block_arg).to eq(example_command)
+    end
+  end
   
   describe "execution_attempted!" do
     it "sets execution_attempted? to true" do
