@@ -5,8 +5,7 @@ Bank::Application.routes.draw do
   get "accounts/:id/deposit" => "accounts#deposit_form", :as => :account_deposit_form
   post "accounts/:id/deposit" => "accounts#deposit", :as => :account_deposit
 
-  get "accounts/transfer" => "accounts#transfer_form", :as => :account_transfer_form
-  post "accounts/transfer" => "accounts#transfer", :as => :account_transfer
-  
+  resources :transfers, only: %w[new create]
+
   root :to => "accounts#index"
 end
