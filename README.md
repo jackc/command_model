@@ -1,19 +1,26 @@
 # CommandModel
 
-Domain models usually have richer behavior than can be represented with a
-typical ActiveRecord style update_attributes.
+CommandModel is an ActiveModel based class that encapsulates the user
+interaction logic that wraps a domain operation. This user interaction
+typically may include sanitizing, validating, normalizing, and typecasting
+input. It also will include the response from the domain operation.
+
+There are three major concerns when handling a user request: input handling,
+domain logic, and persistence. ActiveRecord mixes all three of these concerns
+together. While this is very convenient for simple CRUD, it becomes difficult
+to work with once your domain operations become more complex. Domain models
+usually have richer behavior than can be represented with a typical
+ActiveRecord style update_attributes.
 
     # yuck!
-    account.update_attributes :balance => account.balance - 50 
+    account.update_attributes balance: account.balance - 50 
     
     # much better
-    account.withdraw :amount => 50
+    account.withdraw amount: 50
     
 But there are multiple complications with the OO approach. How do we integrate
 Rails style validations? How are user-supplied strings typecast? How do we
-know if the command succeeded? CommandModel solves these problems. CommandModel
-is an ActiveModel based class that encapsulates validations and typecasting
-for command execution.
+know if the command succeeded? CommandModel solves these problems. 
     
 ## Installation
 
@@ -36,25 +43,23 @@ request.
 
     class WithdrawCommand < CommandModel::Model
       parameter :amount,
-        :typecast => :integer,
-        :presence => true,
-        :numericality => { :greater_than => 0, :less_than_or_equal_to => 500 }
+        typecast: :integer,
+        presence: true,
+        numericality: { greater_than: 0, less_than_or_equal_to: 500 }
     end
     
-Create the method to run the command. This method should call the class method
-execute on the command class and pass it the options it received. It will
-accept either a command object or a hash of attributes. It must pass execute
+Create the method to run the command. This method should instantiate and call a new command object. It must pass call
 a block that actually does the work. The block will only be called if
-the validations in the command object pass. The execute block is free to do
+the validations in the command object pass. The block is free to do
 any further validations that only can be done during execution. If it adds
 any errors to the command object then the command will be considered to have
-failed. Finally the execute method will return the command object.
+failed. Finally, the call method will return self.
 
     class Account
       # ...
       
-      def withdraw(options)
-        WithdrawCommand.execute(options) do |command|
+      def withdraw(args)
+        WithdrawCommand.new(args).call do |command|
           if balance >= command.amount
             @balance -= command.amount
           else
@@ -68,7 +73,7 @@ failed. Finally the execute method will return the command object.
     
 Use example:
 
-    response = account.withdraw :amount => 50
+    response = account.withdraw amount: 50
     
     if response.success?
       puts "Success!"
@@ -76,7 +81,38 @@ Use example:
       puts "Errors:"
       puts response.errors.full_messages
     end
-    
+
+## Mixing in Domain Logic
+
+In a pure OO world the domain logic for actually executing a command may
+belong in another class. However, it is possible to mix in that logic directly
+into the command object. This can easily be done by overriding the execute
+method. The execute method is called by the call method if all validations
+succeed. The following is a reimplementation of the previous example with
+internal domain logic.
+
+    class WithdrawCommand < CommandModel::Model
+      parameter :amount,
+        typecast: :integer,
+        presence: true,
+        numericality: { greater_than: 0, less_than_or_equal_to: 500 }
+      parameter :account_id, presence: true
+
+      def execute
+        account = Account.find_by_id account_id
+        unless account
+          errors.add :account_id, "not found"
+          return
+        end
+
+        if account.balance >= amount
+          account.balance -= amount
+        else
+          errors.add :amount, "is more than account balance"
+        end
+      end
+    end
+
 ## Other uses
 
 This could be used to wrap database generated errors into normal Rails
@@ -85,10 +121,21 @@ show up in errors the same as validates_uniqueness_of. validates_uniqueness_of
 could even be removed for a marginal performance boost as the database should
 be doing a uniqueness check anyway.
 
-# Examples
+## Examples
 
 There is a simple Rails application in examples/bank that demonstrates the
 integration of Rails form helpers and validations with CommandModel.
+
+## Version History
+
+* 1.1 - November 13, 2012
+** Updated documentation and example application
+** Refactored Model to support internal domain logic easier with #call and #execute.
+** Model#initialize can now copy another model
+** Added Model#set_parameters
+** Added Model.parameters
+* 1.0 - April 14, 2012
+** Initial public release
 
 ## Contributing
 
