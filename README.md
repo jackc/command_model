@@ -129,13 +129,13 @@ integration of Rails form helpers and validations with CommandModel.
 ## Version History
 
 * 1.1 - November 13, 2012
-** Updated documentation and example application
-** Refactored Model to support internal domain logic easier with #call and #execute.
-** Model#initialize can now copy another model
-** Added Model#set_parameters
-** Added Model.parameters
+    * Updated documentation and example application
+    * Refactored Model to support internal domain logic easier with #call and #execute.
+    * Model#initialize can now copy another model
+    * Added Model#set_parameters
+    * Added Model.parameters
 * 1.0 - April 14, 2012
-** Initial public release
+    * Initial public release
 
 ## Contributing
 
