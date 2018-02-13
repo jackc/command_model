@@ -183,6 +183,10 @@ module CommandModel
         Integer(value) rescue nil
       end
 
+      def typecast_decimal(value)
+        BigDecimal(value, 16) rescue nil
+      end
+
       def typecast_float(value)
         Float(value) rescue nil
       end

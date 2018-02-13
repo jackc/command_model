@@ -267,6 +267,27 @@ describe CommandModel::Model do
     end
   end
 
+  describe "typecast_decimal" do
+    it "converts to BigDecimal when valid string" do
+      example_command.send(:typecast_decimal, "42").should eq(BigDecimal("42"))
+      example_command.send(:typecast_decimal, "42.5").should eq(BigDecimal("42.5"))
+    end
+
+    it "converts to BigDecimal when float" do
+      example_command.send(:typecast_decimal, 42.0).should eq(BigDecimal("42"))
+    end
+
+    it "converts to BigDecimal when int" do
+      example_command.send(:typecast_decimal, 42).should eq(BigDecimal("42"))
+    end
+
+    it "returns nil when invalid string" do
+      example_command.send(:typecast_decimal, "asdf").should be_nil
+      example_command.send(:typecast_decimal, nil).should be_nil
+      example_command.send(:typecast_decimal, "").should be_nil
+    end
+  end
+
   describe "typecast_date" do
     it "casts to date when valid string" do
       example_command.send(:typecast_date, "01/01/2000").should eq(Date.civil(2000,1,1))
