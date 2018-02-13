@@ -5,7 +5,7 @@ module CommandModel
     extend ActiveModel::Naming
 
     Parameter = Struct.new(:name, :typecast, :validations)
-    
+
     # Parameter requires one or more attributes as its first parameter(s).
     # It accepts an options hash as its last parameter.
     #
@@ -32,7 +32,7 @@ module CommandModel
 
       args.each do |name|
         attr_reader name
-        
+
         if typecast
           attr_typecasting_writer name, typecast
         else
@@ -47,10 +47,10 @@ module CommandModel
     def self.parameters
       @parameters ||= []
     end
-    
+
     def self.attr_typecasting_writer(name, target_type) #:nodoc
       eval <<-END_EVAL
-        def #{name}=(value)
+        public def #{name}=(value)
           typecast_value = typecast_#{target_type}(value)
           if typecast_value
             @typecast_errors.delete("#{name}")
@@ -59,12 +59,12 @@ module CommandModel
             @typecast_errors["#{name}"] = "#{target_type}"
             @#{name} = value
           end
-          
+
           @#{name}
         end
       END_EVAL
     end
-    
+
     # Executes a block of code if the command model is valid.
     #
     # Accepts either a command model or a hash of attributes with which to
@@ -85,10 +85,10 @@ module CommandModel
       else
         new(attributes_or_command)
       end
-      
+
       command.call &block
     end
-    
+
     # Quickly create a successful command object. This is used when the
     # command takes no parameters to want to take advantage of the success?
     # and errors properties of a command object.
@@ -97,7 +97,7 @@ module CommandModel
         instance.execution_attempted!
       end
     end
-    
+
     # Quickly create a failed command object. Requires one parameter with
     # the description of what went wrong. This is used when the
     # command takes no parameters to want to take advantage of the success?
@@ -108,7 +108,7 @@ module CommandModel
         instance.errors.add(:base, error)
       end
     end
-    
+
     # Accepts a parameters hash or another of the same class. If another
     # instance of the same class is passed in then the parameters are copied
     # to the new object.
@@ -139,12 +139,12 @@ module CommandModel
     def execution_attempted! #:nodoc:
       @execution_attempted = true
     end
-    
+
     # True if execution has been attempted on this command
     def execution_attempted?
       @execution_attempted
     end
-    
+
     # Command has been executed without errors
     def success?
       execution_attempted? && errors.empty?
@@ -164,15 +164,15 @@ module CommandModel
         send "#{k}=", v
       end
     end
-    
+
     #:nodoc:
     def persisted?
       false
     end
-    
+
     private
       def extract_parameters_from_hash_or_instance(hash_or_instance)
-        if hash_or_instance.respond_to?(:parameters) 
+        if hash_or_instance.respond_to?(:parameters)
           hash_or_instance.parameters
         else
           hash_or_instance
@@ -182,11 +182,11 @@ module CommandModel
       def typecast_integer(value)
         Integer(value) rescue nil
       end
-      
+
       def typecast_float(value)
         Float(value) rescue nil
       end
-      
+
       def typecast_date(value)
         return value if value.kind_of? Date
         value = value.to_s
@@ -196,7 +196,7 @@ module CommandModel
           Date.strptime(value, "%m/%d/%Y") rescue nil
         end
       end
-      
+
       def include_typecasting_errors
         @typecast_errors.each do |attribute, target_type|
           unless errors[attribute].present?
@@ -204,7 +204,7 @@ module CommandModel
           end
         end
       end
-      
+
       # overriding this to make typecasting errors run at the end so they will
       # not run if there is already an error on the column. Otherwise, when
       # typecasting to an integer and using validates_numericality_of two
