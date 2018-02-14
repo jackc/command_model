@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jackc/command_model.svg)](https://travis-ci.org/jackc/command_model)
+
 # CommandModel
 
 CommandModel is an ActiveModel based class that encapsulates the user
@@ -13,15 +15,15 @@ usually have richer behavior than can be represented with a typical
 ActiveRecord style update_attributes.
 
     # yuck!
-    account.update_attributes balance: account.balance - 50 
-    
+    account.update_attributes balance: account.balance - 50
+
     # much better
     account.withdraw amount: 50
-    
+
 But there are multiple complications with the OO approach. How do we integrate
 Rails style validations? How are user-supplied strings typecast? How do we
-know if the command succeeded? CommandModel solves these problems. 
-    
+know if the command succeeded? CommandModel solves these problems.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -47,7 +49,7 @@ request.
         presence: true,
         numericality: { greater_than: 0, less_than_or_equal_to: 500 }
     end
-    
+
 Create the method to run the command. This method should instantiate and call a new command object. It must pass call
 a block that actually does the work. The block will only be called if
 the validations in the command object pass. The block is free to do
@@ -57,7 +59,7 @@ failed. Finally, the call method will return self.
 
     class Account
       # ...
-      
+
       def withdraw(args)
         WithdrawCommand.new(args).call do |command|
           if balance >= command.amount
@@ -67,14 +69,14 @@ failed. Finally, the call method will return self.
           end
         end
       end
-      
+
       # ...
     end
-    
+
 Use example:
 
     response = account.withdraw amount: 50
-    
+
     if response.success?
       puts "Success!"
     else
