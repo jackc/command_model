@@ -308,6 +308,27 @@ describe CommandModel::Model do
     end
   end
 
+  describe "typecast_boolean" do
+    it "casts to true when any non-false value" do
+      expect(example_command.send(:typecast_boolean, "true")).to eq(true)
+      expect(example_command.send(:typecast_boolean, "t")).to eq(true)
+      expect(example_command.send(:typecast_boolean, "1")).to eq(true)
+      expect(example_command.send(:typecast_boolean, true)).to eq(true)
+      expect(example_command.send(:typecast_boolean, Object.new)).to eq(true)
+      expect(example_command.send(:typecast_boolean, 42)).to eq(true)
+    end
+
+    it "casts to false when false values" do
+      expect(example_command.send(:typecast_boolean, "")).to eq(false)
+      expect(example_command.send(:typecast_boolean, "0")).to eq(false)
+      expect(example_command.send(:typecast_boolean, "f")).to eq(false)
+      expect(example_command.send(:typecast_boolean, "false")).to eq(false)
+      expect(example_command.send(:typecast_boolean, 0)).to eq(false)
+      expect(example_command.send(:typecast_boolean, nil)).to eq(false)
+      expect(example_command.send(:typecast_boolean, false)).to eq(false)
+    end
+  end
+
   it "includes typecasting errors in validations" do
     example_command.instance_variable_get(:@typecast_errors)["name"] = "integer"
     expect(example_command).to_not be_valid

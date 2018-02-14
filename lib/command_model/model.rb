@@ -201,6 +201,15 @@ module CommandModel
         end
       end
 
+      def typecast_boolean(value)
+        case value
+        when "", "0", "false", "f", 0
+          then false
+        else
+          !!value
+        end
+      end
+
       def include_typecasting_errors
         @typecast_errors.each do |attribute, target_type|
           unless errors[attribute].present?
