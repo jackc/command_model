@@ -1,4 +1,12 @@
 module CommandModel
+  class TypecastError < StandardError
+    attr_reader :original_error
+
+    def initialize(original_error)
+      @original_error = original_error
+    end
+  end
+
   class Model
     include ActiveModel::Validations
     include ActiveModel::Conversion
@@ -51,16 +59,12 @@ module CommandModel
     def self.attr_typecasting_writer(name, target_type) #:nodoc
       eval <<-END_EVAL
         public def #{name}=(value)
-          typecast_value = typecast_#{target_type}(value)
-          if typecast_value
-            @typecast_errors.delete("#{name}")
-            @#{name} = typecast_value
-          else
-            @typecast_errors["#{name}"] = "#{target_type}"
-            @#{name} = value
-          end
-
+          @#{name} = typecast_#{target_type}(value)
+          @typecast_errors.delete("#{name}")
           @#{name}
+        rescue TypecastError
+          @typecast_errors["#{name}"] = "#{target_type}"
+          @#{name} = value
         end
       END_EVAL
     end
@@ -180,25 +184,33 @@ module CommandModel
       end
 
       def typecast_integer(value)
-        Integer(value) rescue nil
+        Integer(value)
+      rescue StandardError => e
+        raise TypecastError.new(e)
       end
 
       def typecast_decimal(value)
-        BigDecimal(value, 16) rescue nil
+        BigDecimal(value, 16)
+      rescue StandardError => e
+        raise TypecastError.new(e)
       end
 
       def typecast_float(value)
-        Float(value) rescue nil
+        Float(value)
+      rescue StandardError => e
+        raise TypecastError.new(e)
       end
 
       def typecast_date(value)
         return value if value.kind_of? Date
         value = value.to_s
         if value =~ /\A(\d\d\d\d)-(\d\d)-(\d\d)\z/
-          Date.civil($1.to_i, $2.to_i, $3.to_i) rescue nil
+          Date.civil($1.to_i, $2.to_i, $3.to_i)
         else
-          Date.strptime(value, "%m/%d/%Y") rescue nil
+          Date.strptime(value, "%m/%d/%Y")
         end
+      rescue StandardError => e
+        raise TypecastError.new(e)
       end
 
       def typecast_boolean(value)
