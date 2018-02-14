@@ -15,12 +15,12 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = CommandModel::VERSION
 
-  gem.add_dependency 'activemodel', "> 3.2"
+  gem.add_dependency 'activemodel', "> 4.2"
 
-  gem.add_development_dependency 'rake', "~> 10.1.0"
-  gem.add_development_dependency 'rspec', "~> 2.11.0"
-  gem.add_development_dependency 'guard', "~> 1.5.3"
-  gem.add_development_dependency 'guard-rspec', "~> 2.1.1"
-  gem.add_development_dependency 'rb-fsevent', '~> 0.9.1'
+  gem.add_development_dependency 'rake', "~> 11.3.0"
+  gem.add_development_dependency 'rspec', "~> 2.14.1"
+  gem.add_development_dependency 'guard', "~> 2.14.2"
+  gem.add_development_dependency 'guard-rspec', "~> 3.1.0"
+  gem.add_development_dependency 'rb-fsevent', '~> 0.10.2'
 
 end
