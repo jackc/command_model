@@ -130,6 +130,10 @@ integration of Rails form helpers and validations with CommandModel.
 
 ## Version History
 
+* 1.3 - February 13, 2018
+    * Add decimal type cast
+* 1.2 - October 24, 2014
+    * Suport Rails 4
 * 1.1 - November 13, 2012
     * Updated documentation and example application
     * Refactored Model to support internal domain logic easier with #call and #execute.
