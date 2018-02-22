@@ -243,13 +243,18 @@ describe CommandModel::Model do
 
   describe "typecast_integer" do
     it "casts to integer when valid string" do
-      expect(example_command.send(:typecast_integer, "42")).to eq(42)
+    end
+
+    it "accepts nil" do
+      expect(example_command.send(:typecast_integer, nil)).to eq(nil)
+    end
+
+    it "converts empty string to nil" do
+      expect(example_command.send(:typecast_integer, "")).to eq(nil)
     end
 
     it "raises TypecastError when invalid string" do
       expect { example_command.send(:typecast_integer, "asdf") }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_integer, nil) }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_integer, "") }.to raise_error(CommandModel::TypecastError)
       expect { example_command.send(:typecast_integer, "0.1") }.to raise_error(CommandModel::TypecastError)
     end
   end
@@ -260,10 +265,16 @@ describe CommandModel::Model do
       expect(example_command.send(:typecast_float, "42.5")).to eq(42.5)
     end
 
+    it "accepts nil" do
+      expect(example_command.send(:typecast_float, nil)).to eq(nil)
+    end
+
+    it "converts empty string to nil" do
+      expect(example_command.send(:typecast_float, "")).to eq(nil)
+    end
+
     it "raises TypecastError when invalid string" do
       expect { example_command.send(:typecast_float, "asdf") }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_float, nil) }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_float, "") }.to raise_error(CommandModel::TypecastError)
     end
   end
 
@@ -281,10 +292,16 @@ describe CommandModel::Model do
       expect(example_command.send(:typecast_decimal, 42)).to eq(BigDecimal("42"))
     end
 
+    it "accepts nil" do
+      expect(example_command.send(:typecast_decimal, nil)).to eq(nil)
+    end
+
+    it "converts empty string to nil" do
+      expect(example_command.send(:typecast_decimal, "")).to eq(nil)
+    end
+
     it "raises TypecastError when invalid string" do
       expect { example_command.send(:typecast_decimal, "asdf") }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_decimal, nil) }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_decimal, "") }.to raise_error(CommandModel::TypecastError)
     end
   end
 
@@ -300,10 +317,16 @@ describe CommandModel::Model do
       expect(example_command.send(:typecast_date, date)).to eq(date)
     end
 
+    it "accepts nil" do
+      expect(example_command.send(:typecast_date, nil)).to eq(nil)
+    end
+
+    it "converts empty string to nil" do
+      expect(example_command.send(:typecast_date, "")).to eq(nil)
+    end
+
     it "raises TypecastError when invalid string" do
       expect { example_command.send(:typecast_date, "asdf") }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_date, nil) }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_date, "") }.to raise_error(CommandModel::TypecastError)
       expect { example_command.send(:typecast_date, "3/50/1290") }.to raise_error(CommandModel::TypecastError)
     end
   end
@@ -341,6 +364,4 @@ describe CommandModel::Model do
     expect(invalid_example_command.errors["name"]).to be
     expect(invalid_example_command.errors["name"].find { |e| e =~ /integer/ }).to_not be
   end
-
-
 end

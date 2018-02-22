@@ -184,24 +184,28 @@ module CommandModel
       end
 
       def typecast_integer(value)
+        return nil if value.blank?
         Integer(value)
       rescue StandardError => e
         raise TypecastError.new(e)
       end
 
       def typecast_decimal(value)
+        return nil if value.blank?
         BigDecimal(value, 16)
       rescue StandardError => e
         raise TypecastError.new(e)
       end
 
       def typecast_float(value)
+        return nil if value.blank?
         Float(value)
       rescue StandardError => e
         raise TypecastError.new(e)
       end
 
       def typecast_date(value)
+        return nil if value.blank?
         return value if value.kind_of? Date
         value = value.to_s
         if value =~ /\A(\d\d\d\d)-(\d\d)-(\d\d)\z/
