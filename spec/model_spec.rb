@@ -3,7 +3,6 @@ require 'spec_helper'
 class ExampleCommand < CommandModel::Model
   parameter :name, :presence => true
   parameter :title
-  parameter :age, typecast: :integer
 end
 
 describe CommandModel::Model do
@@ -328,12 +327,6 @@ describe CommandModel::Model do
       expect(example_command.send(:typecast_boolean, nil)).to eq(false)
       expect(example_command.send(:typecast_boolean, false)).to eq(false)
     end
-  end
-
-  it "does not consider nil a typecast error" do
-    example_command.name = "Test"
-    example_command.age = nil
-    expect(example_command).to be_valid
   end
 
   it "includes typecasting errors in validations" do

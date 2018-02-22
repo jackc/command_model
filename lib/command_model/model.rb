@@ -59,7 +59,7 @@ module CommandModel
     def self.attr_typecasting_writer(name, target_type) #:nodoc
       eval <<-END_EVAL
         public def #{name}=(value)
-          @#{name} = value != nil ? typecast_#{target_type}(value) : nil
+          @#{name} = typecast_#{target_type}(value)
           @typecast_errors.delete("#{name}")
           @#{name}
         rescue TypecastError
