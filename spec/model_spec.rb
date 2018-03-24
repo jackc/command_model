@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 class ExampleCommand < CommandModel::Model
-  parameter :name, :presence => true
+  parameter :name, presence: true
   parameter :title
 end
 
@@ -37,8 +37,8 @@ describe CommandModel::Model do
       expect(klass.new.methods).to include(:bar=)
     end
 
-    it "accepts multiple attributes with typecast" do
-      klass.parameter :foo, :bar, :typecast => "integer"
+    it "accepts multiple attributes with convert" do
+      klass.parameter :foo, :bar, :convert => :integer
       expect(klass.new.methods).to include(:foo)
       expect(klass.new.methods).to include(:foo=)
       expect(klass.new.methods).to include(:bar)
@@ -53,12 +53,18 @@ describe CommandModel::Model do
       expect(klass.new.methods).to include(:bar=)
     end
 
-    it "creates typecasting writer" do
-      klass.send(:define_method, :typecast_42) { |value| 42 }
-      klass.parameter :answer, :typecast => "42"
+    it "converts via callable" do
+      klass.parameter :answer, convert: ->(value) { 42 }
       instance = klass.new
       instance.answer = "foo"
       expect(instance.answer).to eq(42)
+    end
+
+    it "converts with multiple converters" do
+      klass.parameter :num, convert: [CommandModel::Convert::StringMutator.new { |s| s.gsub(",", "")}, :integer]
+      instance = klass.new
+      instance.num = "1,000"
+      expect(instance.num).to eq(1000)
     end
 
     it "creates validations" do
@@ -72,7 +78,7 @@ describe CommandModel::Model do
     it "returns all parameters in class" do
       klass = Class.new(CommandModel::Model)
       klass.parameter :name, presence: true
-      klass.parameter :birthdate, typecast: :date, presence: true
+      klass.parameter :birthdate, convert: :date, presence: true
 
       expected = [
         CommandModel::Model::Parameter.new(:name, nil, { presence: true }),
@@ -219,7 +225,7 @@ describe CommandModel::Model do
     it "is a hash of all parameter name and values" do
       klass = Class.new(CommandModel::Model)
       klass.parameter :name, presence: true
-      klass.parameter :birthdate, typecast: :date, presence: true
+      klass.parameter :birthdate, convert: :date, presence: true
 
       expected = { name: "John", birthdate: Date.new(1980,1,1) }
       instance = klass.new expected
@@ -241,125 +247,14 @@ describe CommandModel::Model do
     end
   end
 
-  describe "typecast_integer" do
-    it "casts to integer when valid string" do
-    end
-
-    it "accepts nil" do
-      expect(example_command.send(:typecast_integer, nil)).to eq(nil)
-    end
-
-    it "converts empty string to nil" do
-      expect(example_command.send(:typecast_integer, "")).to eq(nil)
-    end
-
-    it "raises TypecastError when invalid string" do
-      expect { example_command.send(:typecast_integer, "asdf") }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_integer, "0.1") }.to raise_error(CommandModel::TypecastError)
-    end
-  end
-
-  describe "typecast_float" do
-    it "casts to float when valid string" do
-      expect(example_command.send(:typecast_float, "42")).to eq(42.0)
-      expect(example_command.send(:typecast_float, "42.5")).to eq(42.5)
-    end
-
-    it "accepts nil" do
-      expect(example_command.send(:typecast_float, nil)).to eq(nil)
-    end
-
-    it "converts empty string to nil" do
-      expect(example_command.send(:typecast_float, "")).to eq(nil)
-    end
-
-    it "raises TypecastError when invalid string" do
-      expect { example_command.send(:typecast_float, "asdf") }.to raise_error(CommandModel::TypecastError)
-    end
-  end
-
-  describe "typecast_decimal" do
-    it "converts to BigDecimal when valid string" do
-      expect(example_command.send(:typecast_decimal, "42")).to eq(BigDecimal("42"))
-      expect(example_command.send(:typecast_decimal, "42.5")).to eq(BigDecimal("42.5"))
-    end
-
-    it "converts to BigDecimal when float" do
-      expect(example_command.send(:typecast_decimal, 42.0)).to eq(BigDecimal("42"))
-    end
-
-    it "converts to BigDecimal when int" do
-      expect(example_command.send(:typecast_decimal, 42)).to eq(BigDecimal("42"))
-    end
-
-    it "accepts nil" do
-      expect(example_command.send(:typecast_decimal, nil)).to eq(nil)
-    end
-
-    it "converts empty string to nil" do
-      expect(example_command.send(:typecast_decimal, "")).to eq(nil)
-    end
-
-    it "raises TypecastError when invalid string" do
-      expect { example_command.send(:typecast_decimal, "asdf") }.to raise_error(CommandModel::TypecastError)
-    end
-  end
-
-  describe "typecast_date" do
-    it "casts to date when valid string" do
-      expect(example_command.send(:typecast_date, "01/01/2000")).to eq(Date.civil(2000,1,1))
-      expect(example_command.send(:typecast_date, "1/1/2000")).to eq(Date.civil(2000,1,1))
-      expect(example_command.send(:typecast_date, "2000-01-01")).to eq(Date.civil(2000,1,1))
-    end
-
-    it "returns existing date unchanged" do
-      date = Date.civil(2000,1,1)
-      expect(example_command.send(:typecast_date, date)).to eq(date)
-    end
-
-    it "accepts nil" do
-      expect(example_command.send(:typecast_date, nil)).to eq(nil)
-    end
-
-    it "converts empty string to nil" do
-      expect(example_command.send(:typecast_date, "")).to eq(nil)
-    end
-
-    it "raises TypecastError when invalid string" do
-      expect { example_command.send(:typecast_date, "asdf") }.to raise_error(CommandModel::TypecastError)
-      expect { example_command.send(:typecast_date, "3/50/1290") }.to raise_error(CommandModel::TypecastError)
-    end
-  end
-
-  describe "typecast_boolean" do
-    it "casts to true when any non-false value" do
-      expect(example_command.send(:typecast_boolean, "true")).to eq(true)
-      expect(example_command.send(:typecast_boolean, "t")).to eq(true)
-      expect(example_command.send(:typecast_boolean, "1")).to eq(true)
-      expect(example_command.send(:typecast_boolean, true)).to eq(true)
-      expect(example_command.send(:typecast_boolean, Object.new)).to eq(true)
-      expect(example_command.send(:typecast_boolean, 42)).to eq(true)
-    end
-
-    it "casts to false when false values" do
-      expect(example_command.send(:typecast_boolean, "")).to eq(false)
-      expect(example_command.send(:typecast_boolean, "0")).to eq(false)
-      expect(example_command.send(:typecast_boolean, "f")).to eq(false)
-      expect(example_command.send(:typecast_boolean, "false")).to eq(false)
-      expect(example_command.send(:typecast_boolean, 0)).to eq(false)
-      expect(example_command.send(:typecast_boolean, nil)).to eq(false)
-      expect(example_command.send(:typecast_boolean, false)).to eq(false)
-    end
-  end
-
-  it "includes typecasting errors in validations" do
-    example_command.instance_variable_get(:@typecast_errors)["name"] = "integer"
+  it "includes type conversion errors in validations" do
+    example_command.instance_variable_get(:@type_conversion_errors)["name"] = "integer"
     expect(example_command).to_not be_valid
     expect(example_command.errors["name"]).to be
   end
 
-  it "does not include typecasting error in validations if the attribute already has an error" do
-    invalid_example_command.instance_variable_get(:@typecast_errors)["name"] = "integer"
+  it "does not include type conversion error in validations if the attribute already has an error" do
+    invalid_example_command.instance_variable_get(:@type_conversion_errors)["name"] = "integer"
     expect(invalid_example_command).to_not be_valid
     expect(invalid_example_command.errors["name"]).to be
     expect(invalid_example_command.errors["name"].find { |e| e =~ /integer/ }).to_not be

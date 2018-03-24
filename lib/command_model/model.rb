@@ -12,42 +12,43 @@ module CommandModel
     include ActiveModel::Conversion
     extend ActiveModel::Naming
 
-    Parameter = Struct.new(:name, :typecast, :validations)
+    Parameter = Struct.new(:name, :converters, :validations)
 
     # Parameter requires one or more attributes as its first parameter(s).
     # It accepts an options hash as its last parameter.
     #
     # ==== Options
     #
-    # * typecast - The type of object to typecast to. Typecasts are built-in
-    #   for integer, float, and date. Additional typecasts can be defined
-    #   by defining a method typecast_#{name} for a typecast of #{name}.
+    # * convert - An object or array of objects that respond to call and
+    #   convert the assigned value as necessary. Built-in converters exist
+    #   for integer, decimal, float, date, and boolean. These built-in
+    #   converters can be specified by symbol.
     # * validations - All other options are considered validations and are
     #   passed to ActiveModel::Validates.validates
     #
     # ==== Examples
     #
     #   parameter :gender
-    #   parameter :name, :presence => true
-    #   parameter :birthdate, :typecast => :date
+    #   parameter :name, presence: true
+    #   parameter :birthdate, convert: :date
     #   parameter :height, :weight,
-    #     :typecast => :integer,
-    #     :presence => true,
-    #     :numericality => { :greater_than_or_equal_to => 0 }
+    #     convert: [CommandModel::Convert::StringMutator.new { |s| s.gsub(",", "")}, :integer],
+    #     presence: true,
+    #     numericality: { :greater_than_or_equal_to => 0 }
     def self.parameter(*args)
       options = args.last.kind_of?(Hash) ? args.pop.clone : {}
-      typecast = options.delete(:typecast)
+      converters = options.delete(:convert)
 
       args.each do |name|
         attr_reader name
 
-        if typecast
-          attr_typecasting_writer name, typecast
+        if converters
+          attr_type_converting_writer name, Array(converters)
         else
           attr_writer name
         end
         validates name, options.clone if options.present? # clone options because validates mutates the hash :(
-        parameters.push Parameter.new name, typecast, options
+        parameters.push Parameter.new name, converters, options
       end
     end
 
@@ -56,17 +57,37 @@ module CommandModel
       @parameters ||= []
     end
 
-    def self.attr_typecasting_writer(name, target_type) #:nodoc
-      eval <<-END_EVAL
-        public def #{name}=(value)
-          @#{name} = typecast_#{target_type}(value)
-          @typecast_errors.delete("#{name}")
-          @#{name}
-        rescue TypecastError
-          @typecast_errors["#{name}"] = "#{target_type}"
-          @#{name} = value
+    def self.attr_type_converting_writer(name, converters) #:nodoc
+      converters = converters.map do |c|
+        if c.respond_to? :call
+          c
+        else
+          case c.to_s
+          when "integer"
+            CommandModel::Convert::Integer.new
+          when "decimal"
+            CommandModel::Convert::Decimal.new
+          when "float"
+            CommandModel::Convert::Float.new
+          when "date"
+            CommandModel::Convert::Date.new
+          when "boolean"
+            CommandModel::Convert::Boolean.new
+          else
+            raise ArgumentError, "unknown converter #{c}"
+          end
         end
-      END_EVAL
+      end
+
+      define_method "#{name}=" do |value|
+        converted_value = converters.reduce(value) { |v, c| c.call(v) }
+        instance_variable_set "@#{name}", converted_value
+        instance_variable_get("@type_conversion_errors").delete(name)
+        instance_variable_get "@#{name}"
+      rescue CommandModel::Convert::ConvertError => e
+        instance_variable_get("@type_conversion_errors")[name] = e.target_type
+        instance_variable_set "@#{name}", value
+      end
     end
 
     # Executes a block of code if the command model is valid.
@@ -117,7 +138,7 @@ module CommandModel
     # instance of the same class is passed in then the parameters are copied
     # to the new object.
     def initialize(parameters={})
-      @typecast_errors = {}
+      @type_conversion_errors = {}
       set_parameters parameters
     end
 
@@ -183,51 +204,8 @@ module CommandModel
         end
       end
 
-      def typecast_integer(value)
-        return nil if value.blank?
-        Integer(value)
-      rescue StandardError => e
-        raise TypecastError.new(e)
-      end
-
-      def typecast_decimal(value)
-        return nil if value.blank?
-        BigDecimal(value, 16)
-      rescue StandardError => e
-        raise TypecastError.new(e)
-      end
-
-      def typecast_float(value)
-        return nil if value.blank?
-        Float(value)
-      rescue StandardError => e
-        raise TypecastError.new(e)
-      end
-
-      def typecast_date(value)
-        return nil if value.blank?
-        return value if value.kind_of? Date
-        value = value.to_s
-        if value =~ /\A(\d\d\d\d)-(\d\d)-(\d\d)\z/
-          Date.civil($1.to_i, $2.to_i, $3.to_i)
-        else
-          Date.strptime(value, "%m/%d/%Y")
-        end
-      rescue StandardError => e
-        raise TypecastError.new(e)
-      end
-
-      def typecast_boolean(value)
-        case value
-        when "", "0", "false", "f", 0
-          then false
-        else
-          !!value
-        end
-      end
-
       def include_typecasting_errors
-        @typecast_errors.each do |attribute, target_type|
+        @type_conversion_errors.each do |attribute, target_type|
           unless errors[attribute].present?
             errors.add attribute, "is not a #{target_type}"
           end
