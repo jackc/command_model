@@ -4,21 +4,14 @@ describe "CommandModel::Convert" do
   describe "StringMutator" do
     subject { CommandModel::Convert::StringMutator.new { |s| s.gsub(",", "") } }
 
-    it "casts to integer when valid string" do
-      expect(subject.("42")).to eq(42)
+    it "strips commas from strings" do
+      expect(subject.("1,000")).to eq("1000")
     end
 
-    it "accepts nil" do
+    it "does nothing to non-strings" do
       expect(subject.(nil)).to eq(nil)
-    end
-
-    it "converts empty string to nil" do
-      expect(subject.("")).to eq(nil)
-    end
-
-    it "raises TypecastError when invalid string" do
-      expect { subject.("asdf") }.to raise_error(CommandModel::Convert::ConvertError)
-      expect { subject.("0.1") }.to raise_error(CommandModel::Convert::ConvertError)
+      expect(subject.(42)).to eq(42)
+      expect(subject.(:bla)).to eq(:bla)
     end
   end
 
