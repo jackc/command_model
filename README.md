@@ -3,9 +3,9 @@
 # CommandModel
 
 CommandModel is an ActiveModel based class that encapsulates the user
-interaction logic that wraps a domain operation. This user interaction
-typically may include sanitizing, validating, normalizing, and typecasting
-input. It also will include the response from the domain operation.
+interaction logic that wraps a domain operation. This user interaction typically
+may include sanitizing, validating, normalizing, and type converting input. It
+also will include the response from the domain operation.
 
 There are three major concerns when handling a user request: input handling,
 domain logic, and persistence. ActiveRecord mixes all three of these concerns
@@ -21,7 +21,7 @@ ActiveRecord style update_attributes.
     account.withdraw amount: 50
 
 But there are multiple complications with the OO approach. How do we integrate
-Rails style validations? How are user-supplied strings typecast? How do we
+Rails style validations? How are user-supplied strings type converted? How do we
 know if the command succeeded? CommandModel solves these problems.
 
 ## Installation
@@ -45,7 +45,7 @@ request.
 
     class WithdrawCommand < CommandModel::Model
       parameter :amount,
-        typecast: :integer,
+        convert: :integer,
         presence: true,
         numericality: { greater_than: 0, less_than_or_equal_to: 500 }
     end
@@ -95,7 +95,7 @@ internal domain logic.
 
     class WithdrawCommand < CommandModel::Model
       parameter :amount,
-        typecast: :integer,
+        convert: :integer,
         presence: true,
         numericality: { greater_than: 0, less_than_or_equal_to: 500 }
       parameter :account_id, presence: true
@@ -130,6 +130,12 @@ integration of Rails form helpers and validations with CommandModel.
 
 ## Version History
 
+* 2.0 - April 11, 2018
+    * Rename typecast parameter option to convert
+    * Any callable object can be used as a type converter
+    * Multiple type converters can be chained together
+    * Added StringMutator type converter
+    * Add boolean type conversion
 * 1.3 - February 13, 2018
     * Add decimal type cast
 * 1.2 - October 24, 2014
