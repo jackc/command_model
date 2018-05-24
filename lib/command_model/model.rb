@@ -1,12 +1,4 @@
 module CommandModel
-  class TypecastError < StandardError
-    attr_reader :original_error
-
-    def initialize(original_error)
-      @original_error = original_error
-    end
-  end
-
   class Model
     include ActiveModel::Validations
     include ActiveModel::Conversion

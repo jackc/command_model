@@ -30,7 +30,7 @@ describe "CommandModel::Convert" do
       expect(subject.("")).to eq(nil)
     end
 
-    it "raises TypecastError when invalid string" do
+    it "raises ConvertError when invalid string" do
       expect { subject.("asdf") }.to raise_error(CommandModel::Convert::ConvertError)
       expect { subject.("0.1") }.to raise_error(CommandModel::Convert::ConvertError)
     end
@@ -52,7 +52,7 @@ describe "CommandModel::Convert" do
       expect(subject.("")).to eq(nil)
     end
 
-    it "raises TypecastError when invalid string" do
+    it "raises ConvertError when invalid string" do
       expect { subject.("asdf") }.to raise_error(CommandModel::Convert::ConvertError)
     end
   end
@@ -81,7 +81,7 @@ describe "CommandModel::Convert" do
       expect(subject.("")).to eq(nil)
     end
 
-    it "raises TypecastError when invalid string" do
+    it "raises ConvertError when invalid string" do
       expect { subject.("asdf") }.to raise_error(CommandModel::Convert::ConvertError)
     end
   end
@@ -108,7 +108,7 @@ describe "CommandModel::Convert" do
       expect(subject.("")).to eq(nil)
     end
 
-    it "raises TypecastError when invalid string" do
+    it "raises ConvertError when invalid string" do
       expect { subject.("asdf") }.to raise_error(CommandModel::Convert::ConvertError)
       expect { subject.("3/50/1290") }.to raise_error(CommandModel::Convert::ConvertError)
     end
