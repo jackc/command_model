@@ -130,6 +130,8 @@ integration of Rails form helpers and validations with CommandModel.
 
 ## Version History
 
+* 2.0.1 - April 3, 2023
+    * Date parsing allows 5 digit years
 * 2.0 - April 11, 2018
     * Rename typecast parameter option to convert
     * Any callable object can be used as a type converter
