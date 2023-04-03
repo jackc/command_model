@@ -61,7 +61,7 @@ module CommandModel
         return nil if value.blank?
         return value if value.kind_of? Date
         value = value.to_s
-        if value =~ /\A(\d\d\d\d)-(\d\d)-(\d\d)\z/
+        if value =~ /\A(\d{4,5})-(\d\d)-(\d\d)\z/
           ::Date.civil($1.to_i, $2.to_i, $3.to_i)
         else
           ::Date.strptime(value, "%m/%d/%Y")

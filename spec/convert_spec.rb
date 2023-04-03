@@ -93,6 +93,7 @@ describe "CommandModel::Convert" do
       expect(subject.("01/01/2000")).to eq(Date.civil(2000,1,1))
       expect(subject.("1/1/2000")).to eq(Date.civil(2000,1,1))
       expect(subject.("2000-01-01")).to eq(Date.civil(2000,1,1))
+      expect(subject.("29000-01-01")).to eq(Date.civil(29000,1,1))
     end
 
     it "returns existing date unchanged" do
