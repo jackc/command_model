@@ -142,6 +142,21 @@ be doing a uniqueness check anyway.
 There is a simple Rails application in examples/bank that demonstrates the
 integration of Rails form helpers and validations with CommandModel.
 
+## Testing
+
+```console
+$ bundle install
+$ rake
+```
+
+To test against a specific version of Rails / ActiveModel set the BUNDLE_GEMFILE environment variable. For example, to
+test Rails 6.1:
+
+```console
+$ BUNDLE_GEMFILE=gemfiles/6.1.gemfile bundle install
+$ BUNDLE_GEMFILE=gemfiles/6.1.gemfile rake
+```
+
 ## Version History
 
 * 2.0.1 - April 3, 2023
