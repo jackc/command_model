@@ -6,7 +6,7 @@ class ExampleCommand < CommandModel::Model
 end
 
 describe CommandModel::Model do
-  let(:example_command) { ExampleCommand.new :name => "John" }
+  let(:example_command) { ExampleCommand.new name: "John" }
   let(:invalid_example_command) { ExampleCommand.new }
 
   describe "self.parameter" do
@@ -38,7 +38,7 @@ describe CommandModel::Model do
     end
 
     it "accepts multiple attributes with convert" do
-      klass.parameter :foo, :bar, :convert => :integer
+      klass.parameter :foo, :bar, convert: :integer
       expect(klass.new.methods).to include(:foo)
       expect(klass.new.methods).to include(:foo=)
       expect(klass.new.methods).to include(:bar)
@@ -46,7 +46,7 @@ describe CommandModel::Model do
     end
 
     it "accepts multiple attributes with validation" do
-      klass.parameter :foo, :bar, :presence => true
+      klass.parameter :foo, :bar, presence: true
       expect(klass.new.methods).to include(:foo)
       expect(klass.new.methods).to include(:foo=)
       expect(klass.new.methods).to include(:bar)
@@ -126,7 +126,7 @@ describe CommandModel::Model do
     end
 
     it "accepts attributes, creates object, and returns it" do
-      c = ExampleCommand.execute(:name => "John") {}
+      c = ExampleCommand.execute(name: "John") {}
       expect(c).to be_kind_of(ExampleCommand)
       expect(c.name).to eq("John")
     end
@@ -165,7 +165,7 @@ describe CommandModel::Model do
       klass = Class.new(CommandModel::Model)
       klass.dependency :stdout, default: -> { $stdout }
       klass.parameter :name
-      m = klass.execute(:name => "John")
+      m = klass.execute(name: "John")
       expect(m.stdout).to eq($stdout)
       expect(m.execution_attempted?).to eq(true)
     end
@@ -175,7 +175,7 @@ describe CommandModel::Model do
       klass.dependency :stdout, default: -> { $stdout }
       klass.parameter :name
       writer = StringIO.new
-      m = klass.execute({:name => "John"}, :stdout => writer)
+      m = klass.execute({name: "John"}, stdout: writer)
       expect(m.stdout).to eq(writer)
       expect(m.execution_attempted?).to eq(true)
     end
@@ -201,12 +201,12 @@ describe CommandModel::Model do
 
   describe "initialize" do
     it "assigns parameters from hash" do
-      m = ExampleCommand.new :name => "John"
+      m = ExampleCommand.new name: "John"
       expect(m.name).to eq("John")
     end
 
     it "assigns parameters from other CommandModel" do
-      other = ExampleCommand.new :name => "John"
+      other = ExampleCommand.new name: "John"
       m = ExampleCommand.new other
       expect(m.name).to eq(other.name)
     end
@@ -215,7 +215,7 @@ describe CommandModel::Model do
       klass = Class.new(CommandModel::Model)
       klass.dependency :stdout, default: -> { $stdout }
       klass.parameter :name
-      m = klass.new :name => "John"
+      m = klass.new name: "John"
       expect(m.stdout).to eq($stdout)
     end
 
@@ -224,7 +224,7 @@ describe CommandModel::Model do
       klass.dependency :stdout, default: -> { $stdout }
       klass.parameter :name
       writer = StringIO.new
-      m = klass.new({:name => "John"}, :stdout => writer)
+      m = klass.new({name: "John"}, stdout: writer)
       expect(m.stdout).to eq(writer)
     end
   end

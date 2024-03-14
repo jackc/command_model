@@ -12,12 +12,8 @@
   </ul>
 <% end %>
 
-<%= form_for @deposit, :as => :deposit, :url => account_deposit_path(@account) do |f| %>
+<%= form_for @deposit, as: :deposit, url: account_deposit_path(@account) do |f| %>
   <%= f.label :amount %>
   <%= f.text_field :amount %>
   <%= f.submit "Deposit" %>
 <% end %>
-
-
-
-

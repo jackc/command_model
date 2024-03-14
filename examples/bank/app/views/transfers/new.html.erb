@@ -14,11 +14,11 @@
 <%= form_for @transfer do |f| %>
   <div>
     <%= f.label :from_name %><br />
-    <%= f.select :from_name, @accounts.map { |a| ["#{a.name} - #{a.balance}", a.name] }, :selected => f.object.from_name, :include_blank => true %>
+    <%= f.select :from_name, @accounts.map { |a| ["#{a.name} - #{a.balance}", a.name] }, selected: f.object.from_name, include_blank: true %>
   </div>
   <div>
     <%= f.label :to_name %><br />
-    <%= f.select :to_name, @accounts.map { |a| ["#{a.name} - #{a.balance}", a.name] }, :selected => f.object.to_name, :include_blank => true %>
+    <%= f.select :to_name, @accounts.map { |a| ["#{a.name} - #{a.balance}", a.name] }, selected: f.object.to_name, include_blank: true %>
   </div>
   <div>
     <%= f.label :amount %><br />
@@ -26,7 +26,3 @@
   </div>
   <%= f.submit "Transfer" %>
 <% end %>
-
-
-
-

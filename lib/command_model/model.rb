@@ -26,7 +26,7 @@ module CommandModel
     #   parameter :height, :weight,
     #     convert: [CommandModel::Convert::StringMutator.new { |s| s.gsub(",", "")}, :integer],
     #     presence: true,
-    #     numericality: { :greater_than_or_equal_to => 0 }
+    #     numericality: { greater_than_or_equal_to: 0 }
     def self.parameter(*args)
       options = args.last.kind_of?(Hash) ? args.pop.clone : {}
       converters = options.delete(:convert)
@@ -119,7 +119,7 @@ module CommandModel
     #
     # ==== Examples
     #
-    #   RenameUserCommand.execute(:login => "john") do |command|
+    #   RenameUserCommand.execute(login: "john") do |command|
     #     if allowed_to_rename_user?
     #       self.login = command.login
     #     else
