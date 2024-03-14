@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/jackc/command_model.svg)](https://travis-ci.org/jackc/command_model)
-
 # CommandModel
 
 CommandModel is an ActiveModel based class that encapsulates the user
