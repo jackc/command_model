@@ -82,6 +82,36 @@ module CommandModel
       end
     end
 
+    Dependency = Struct.new(:name, :default)
+
+    # Dependency requires one or more attributes as its first parameter(s). A dependency is something that is required
+    # for the command to execute that is not user supplied input. For example, a database connection, a logger, or the
+    # current user.
+    #
+    # ==== Keyword Arguments
+    #
+    # * default - An object that will be used as the default value for the dependency or a callable object that will be
+    #   called to get the default value.
+    #
+    # ==== Examples
+    #
+    #   dependency :current_user
+    #   dependency :stdout, default: -> { $stdout }
+    def self.dependency(*names, default: nil)
+      names.each do |name|
+        name = name.to_sym
+        attr_reader name
+        private attr_writer name
+        default_callable = default.respond_to?(:call) ? default : -> { default }
+        dependencies.push Dependency.new name, default_callable
+      end
+    end
+
+    # Returns array of all dependencies defined for class.
+    def self.dependencies
+      @dependencies ||= []
+    end
+
     # Executes a block of code if the command model is valid.
     #
     # Accepts either a command model or a hash of attributes with which to
@@ -96,11 +126,12 @@ module CommandModel
     #       command.errors.add :base, "not allowed to rename"
     #     end
     #   end
-    def self.execute(attributes_or_command, &block)
+    def self.execute(attributes_or_command, dependencies={}, &block)
       command = if attributes_or_command.kind_of? self
+        raise ArgumentError, "cannot pass dependencies with already initialized command" if dependencies.present?
         attributes_or_command
       else
-        new(attributes_or_command)
+        new(attributes_or_command, dependencies)
       end
 
       command.call &block
@@ -129,9 +160,19 @@ module CommandModel
     # Accepts a parameters hash or another of the same class. If another
     # instance of the same class is passed in then the parameters are copied
     # to the new object.
-    def initialize(parameters={})
+    def initialize(parameters={}, dependencies={})
       @type_conversion_errors = {}
       set_parameters parameters
+
+      dependencies = dependencies.symbolize_keys
+      self.class.dependencies.each do |dependency|
+        self.send "#{dependency.name}=", dependencies.fetch(dependency.name, dependency.default.call)
+      end
+
+      unknown_dependencies = dependencies.keys - self.class.dependencies.map(&:name)
+      if unknown_dependencies.present?
+        raise ArgumentError, "Unknown dependencies: #{bad_dependencies.join(", ")}"
+      end
     end
 
     # Executes the command by calling the method +execute+ if the validations

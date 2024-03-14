@@ -89,6 +89,37 @@ describe CommandModel::Model do
     end
   end
 
+  describe "self.dependency" do
+    let(:klass) { Class.new(CommandModel::Model) }
+
+    it "creates an attribute reader" do
+      klass.dependency :foo
+      expect(klass.new.methods).to include(:foo)
+    end
+
+    it "accepts multiple attributes" do
+      klass.dependency :foo, :bar
+      expect(klass.new.methods).to include(:foo)
+      expect(klass.new.methods).to include(:bar)
+    end
+
+    it "accepts multiple attributes with default" do
+      klass.dependency :foo, :bar, default: -> { "baz" }
+      expect(klass.new.methods).to include(:foo)
+      expect(klass.new.methods).to include(:bar)
+    end
+  end
+
+  describe "self.dependencies" do
+    it "returns all dependencies in class" do
+      klass = Class.new(CommandModel::Model)
+      klass.dependency :foo
+      klass.dependency :bar
+
+      expect(klass.dependencies.map(&:name)).to eq([:foo, :bar])
+    end
+  end
+
   describe "self.execute" do
     it "accepts object of same kind and returns it" do
       expect(ExampleCommand.execute(example_command) {}).to eq(example_command)
@@ -129,6 +160,25 @@ describe CommandModel::Model do
 
       expect(example_command).to_not be_success
     end
+
+    it "uses default dependencies when not provided" do
+      klass = Class.new(CommandModel::Model)
+      klass.dependency :stdout, default: -> { $stdout }
+      klass.parameter :name
+      m = klass.execute(:name => "John")
+      expect(m.stdout).to eq($stdout)
+      expect(m.execution_attempted?).to eq(true)
+    end
+
+    it "accepts dependencies from arguments" do
+      klass = Class.new(CommandModel::Model)
+      klass.dependency :stdout, default: -> { $stdout }
+      klass.parameter :name
+      writer = StringIO.new
+      m = klass.execute({:name => "John"}, :stdout => writer)
+      expect(m.stdout).to eq(writer)
+      expect(m.execution_attempted?).to eq(true)
+    end
   end
 
   describe "self.success" do
@@ -159,6 +209,23 @@ describe CommandModel::Model do
       other = ExampleCommand.new :name => "John"
       m = ExampleCommand.new other
       expect(m.name).to eq(other.name)
+    end
+
+    it "assigns default dependencies when not provided" do
+      klass = Class.new(CommandModel::Model)
+      klass.dependency :stdout, default: -> { $stdout }
+      klass.parameter :name
+      m = klass.new :name => "John"
+      expect(m.stdout).to eq($stdout)
+    end
+
+    it "assigns dependencies from arguments" do
+      klass = Class.new(CommandModel::Model)
+      klass.dependency :stdout, default: -> { $stdout }
+      klass.parameter :name
+      writer = StringIO.new
+      m = klass.new({:name => "John"}, :stdout => writer)
+      expect(m.stdout).to eq(writer)
     end
   end
 

@@ -131,6 +131,43 @@ class WithdrawCommand < CommandModel::Model
 end
 ```
 
+## Dependencies
+
+Sometimes a command has requires values that are not supplied by the user. For example, a command may require the
+current user, a database connection, or a logger. These dependencies can be specified with the `dependency` method. The following example adds filtering to ensure that the current user owns the account.
+
+```ruby
+class WithdrawCommand < CommandModel::Model
+  dependency :current_user
+
+  parameter :amount,
+    convert: :integer,
+    presence: true,
+    numericality: { greater_than: 0, less_than_or_equal_to: 500 }
+  parameter :account_id, presence: true
+
+  def execute
+    account = current_user.accounts.find_by_id account_id
+    unless account
+      errors.add :account_id, "not found"
+      return
+    end
+
+    if account.balance >= amount
+      account.balance -= amount
+    else
+      errors.add :amount, "is more than account balance"
+    end
+  end
+end
+```
+
+This command could be called as follows.
+
+```ruby
+WithdrawCommand.execute({amount: 200}, {current_user: current_user})
+```
+
 ## Other uses
 
 This could be used to wrap database generated errors into normal Rails
