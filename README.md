@@ -12,11 +12,13 @@ to work with once your domain operations become more complex. Domain models
 usually have richer behavior than can be represented with a typical
 ActiveRecord style update_attributes.
 
-    # yuck!
-    account.update_attributes balance: account.balance - 50
+```ruby
+# yuck!
+account.update_attributes balance: account.balance - 50
 
-    # much better
-    account.withdraw amount: 50
+# much better
+account.withdraw amount: 50
+```
 
 But there are multiple complications with the OO approach. How do we integrate
 Rails style validations? How are user-supplied strings type converted? How do we
@@ -26,27 +28,35 @@ know if the command succeeded? CommandModel solves these problems.
 
 Add this line to your application's Gemfile:
 
-    gem 'command_model'
+```ruby
+gem 'command_model'
+```
 
 And then execute:
 
-    $ bundle
+```console
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install command_model
+```console
+$ gem install command_model
+```
 
 ## Usage
 
 Create a class derived from CommandModel::Model to represent the command
 request.
 
-    class WithdrawCommand < CommandModel::Model
-      parameter :amount,
-        convert: :integer,
-        presence: true,
-        numericality: { greater_than: 0, less_than_or_equal_to: 500 }
-    end
+```ruby
+class WithdrawCommand < CommandModel::Model
+  parameter :amount,
+    convert: :integer,
+    presence: true,
+    numericality: { greater_than: 0, less_than_or_equal_to: 500 }
+end
+```
 
 Create the method to run the command. This method should instantiate and call a new command object. It must pass call
 a block that actually does the work. The block will only be called if
@@ -55,32 +65,36 @@ any further validations that only can be done during execution. If it adds
 any errors to the command object then the command will be considered to have
 failed. Finally, the call method will return self.
 
-    class Account
-      # ...
+```ruby
+class Account
+  # ...
 
-      def withdraw(args)
-        WithdrawCommand.new(args).call do |command|
-          if balance >= command.amount
-            @balance -= command.amount
-          else
-            command.errors.add :amount, "is more than account balance"
-          end
-        end
+  def withdraw(args)
+    WithdrawCommand.new(args).call do |command|
+      if balance >= command.amount
+        @balance -= command.amount
+      else
+        command.errors.add :amount, "is more than account balance"
       end
-
-      # ...
     end
+  end
+
+  # ...
+end
+```
 
 Use example:
 
-    response = account.withdraw amount: 50
+```ruby
+response = account.withdraw amount: 50
 
-    if response.success?
-      puts "Success!"
-    else
-      puts "Errors:"
-      puts response.errors.full_messages
-    end
+if response.success?
+  puts "Success!"
+else
+  puts "Errors:"
+  puts response.errors.full_messages
+end
+```
 
 ## Mixing in Domain Logic
 
@@ -91,27 +105,29 @@ method. The execute method is called by the call method if all validations
 succeed. The following is a reimplementation of the previous example with
 internal domain logic.
 
-    class WithdrawCommand < CommandModel::Model
-      parameter :amount,
-        convert: :integer,
-        presence: true,
-        numericality: { greater_than: 0, less_than_or_equal_to: 500 }
-      parameter :account_id, presence: true
+```ruby
+class WithdrawCommand < CommandModel::Model
+  parameter :amount,
+    convert: :integer,
+    presence: true,
+    numericality: { greater_than: 0, less_than_or_equal_to: 500 }
+  parameter :account_id, presence: true
 
-      def execute
-        account = Account.find_by_id account_id
-        unless account
-          errors.add :account_id, "not found"
-          return
-        end
-
-        if account.balance >= amount
-          account.balance -= amount
-        else
-          errors.add :amount, "is more than account balance"
-        end
-      end
+  def execute
+    account = Account.find_by_id account_id
+    unless account
+      errors.add :account_id, "not found"
+      return
     end
+
+    if account.balance >= amount
+      account.balance -= amount
+    else
+      errors.add :amount, "is more than account balance"
+    end
+  end
+end
+```
 
 ## Other uses
 
