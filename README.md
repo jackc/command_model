@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/jackc/command_model/actions/workflows/ci.yml/badge.svg)](https://github.com/jackc/command_model/actions/workflows/ci.yml)
+
 # CommandModel
 
 CommandModel is an ActiveModel based class that encapsulates the user
