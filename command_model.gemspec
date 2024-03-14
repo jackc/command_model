@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = CommandModel::VERSION
 
-  gem.required_ruby_version = '>= 3.1.0'
+  gem.required_ruby_version = '>= 3.2.0'
 
   gem.add_dependency 'activemodel', "> 6.1"
 

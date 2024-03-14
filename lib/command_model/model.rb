@@ -4,7 +4,7 @@ module CommandModel
     include ActiveModel::Conversion
     extend ActiveModel::Naming
 
-    Parameter = Struct.new(:name, :converters, :validations)
+    Parameter = Data.define(:name, :converters, :validations)
 
     # Parameter requires one or more attributes as its first parameter(s).
     # It accepts an options hash as its last parameter.
@@ -82,7 +82,7 @@ module CommandModel
       end
     end
 
-    Dependency = Struct.new(:name, :default)
+    Dependency = Data.define(:name, :default)
 
     # Dependency requires one or more attributes as its first parameter(s). A dependency is something that is required
     # for the command to execute that is not user supplied input. For example, a database connection, a logger, or the
