@@ -31,6 +31,7 @@ module CommandModel
       options = args.last.kind_of?(Hash) ? args.pop.clone : {}
       converters = options.delete(:convert)
 
+      @parameters ||= [].freeze
       args.each do |name|
         attr_reader name
 
@@ -40,13 +41,13 @@ module CommandModel
           attr_writer name
         end
         validates name, options.clone if options.present? # clone options because validates mutates the hash :(
-        parameters.push Parameter.new name, converters, options
+        @parameters = (@parameters + [Parameter.new(name, converters, options)]).freeze
       end
     end
 
     # Returns array of all parameters defined for class
     def self.parameters
-      @parameters ||= []
+      @parameters ||= [].freeze
     end
 
     def self.attr_type_converting_writer(name, converters) #:nodoc
@@ -98,18 +99,19 @@ module CommandModel
     #   dependency :current_user
     #   dependency :stdout, default: -> { $stdout }
     def self.dependency(*names, default: nil)
+      @dependencies ||= [].freeze
       names.each do |name|
         name = name.to_sym
         attr_reader name
         private attr_writer name
         default_callable = default.respond_to?(:call) ? default : -> { default }
-        dependencies.push Dependency.new name, default_callable
+        @dependencies = (@dependencies + [Dependency.new(name, default_callable)]).freeze
       end
     end
 
     # Returns array of all dependencies defined for class.
     def self.dependencies
-      @dependencies ||= []
+      @dependencies ||= [].freeze
     end
 
     # Executes a block of code if the command model is valid.
