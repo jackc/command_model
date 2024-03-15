@@ -168,6 +168,12 @@ This command could be called as follows.
 WithdrawCommand.execute({amount: 200}, {current_user: current_user})
 ```
 
+## Inheritance
+
+Subclasses of `CommandModel::Model` can themselves be subclassed. Parameter and dependency definitions will be copied at
+the time of subclassing. If the superclass is later modified, the parameter and dependency definitions of the subclasses
+will not be modified. This may be changed in the future.
+
 ## Other uses
 
 This could be used to wrap database generated errors into normal Rails

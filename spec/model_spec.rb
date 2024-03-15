@@ -72,6 +72,27 @@ describe CommandModel::Model do
       expect(instance).to_not be_valid
       expect(instance.errors[:name]).to be_present
     end
+
+    it "works when model is inherited" do
+      klass.parameter :foo
+      expect(klass.parameters.map(&:name)).to eq([:foo])
+
+      klass_b = Class.new(klass)
+      expect(klass_b.parameters.map(&:name)).to eq([:foo])
+      klass_b.parameter :bar
+      expect(klass.parameters.map(&:name)).to eq([:foo])
+      expect(klass_b.parameters.map(&:name)).to eq([:foo, :bar])
+
+      klass_c = Class.new(klass_b)
+      expect(klass.parameters.map(&:name)).to eq([:foo])
+      expect(klass_b.parameters.map(&:name)).to eq([:foo, :bar])
+      expect(klass_c.parameters.map(&:name)).to eq([:foo, :bar])
+
+      klass_c.parameter :baz
+      expect(klass.parameters.map(&:name)).to eq([:foo])
+      expect(klass_b.parameters.map(&:name)).to eq([:foo, :bar])
+      expect(klass_c.parameters.map(&:name)).to eq([:foo, :bar, :baz])
+    end
   end
 
   describe "self.parameters" do
@@ -107,6 +128,27 @@ describe CommandModel::Model do
       klass.dependency :foo, :bar, default: -> { "baz" }
       expect(klass.new.methods).to include(:foo)
       expect(klass.new.methods).to include(:bar)
+    end
+
+    it "works when model is inherited" do
+      klass.dependency :foo
+      expect(klass.dependencies.map(&:name)).to eq([:foo])
+
+      klass_b = Class.new(klass)
+      expect(klass_b.dependencies.map(&:name)).to eq([:foo])
+      klass_b.dependency :bar
+      expect(klass.dependencies.map(&:name)).to eq([:foo])
+      expect(klass_b.dependencies.map(&:name)).to eq([:foo, :bar])
+
+      klass_c = Class.new(klass_b)
+      expect(klass.dependencies.map(&:name)).to eq([:foo])
+      expect(klass_b.dependencies.map(&:name)).to eq([:foo, :bar])
+      expect(klass_c.dependencies.map(&:name)).to eq([:foo, :bar])
+
+      klass_c.dependency :baz
+      expect(klass.dependencies.map(&:name)).to eq([:foo])
+      expect(klass_b.dependencies.map(&:name)).to eq([:foo, :bar])
+      expect(klass_c.dependencies.map(&:name)).to eq([:foo, :bar, :baz])
     end
   end
 

@@ -4,6 +4,11 @@ module CommandModel
     include ActiveModel::Conversion
     extend ActiveModel::Naming
 
+    def self.inherited(subclass)
+      subclass.instance_variable_set :@parameters, parameters.dup.freeze
+      subclass.instance_variable_set :@dependencies, dependencies.dup.freeze
+    end
+
     Parameter = Data.define(:name, :converters, :validations)
 
     # Parameter requires one or more attributes as its first parameter(s).
