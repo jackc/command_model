@@ -88,7 +88,7 @@ module CommandModel
       end
     end
 
-    Dependency = Data.define(:name, :default)
+    Dependency = Data.define(:name, :default, :allow_blank)
 
     # Dependency requires one or more attributes as its first parameter(s). A dependency is something that is required
     # for the command to execute that is not user supplied input. For example, a database connection, a logger, or the
@@ -98,19 +98,20 @@ module CommandModel
     #
     # * default - An object that will be used as the default value for the dependency or a callable object that will be
     #   called to get the default value.
+    # * allow_blank - If true, the dependency can be nil or blank. If false, the dependency must be present.
     #
     # ==== Examples
     #
     #   dependency :current_user
     #   dependency :stdout, default: -> { $stdout }
-    def self.dependency(*names, default: nil)
+    def self.dependency(*names, default: nil, allow_blank: false)
       @dependencies ||= [].freeze
       names.each do |name|
         name = name.to_sym
         attr_reader name
         private attr_writer name
         default_callable = default.respond_to?(:call) ? default : -> { default }
-        @dependencies = (@dependencies + [Dependency.new(name, default_callable)]).freeze
+        @dependencies = (@dependencies + [Dependency.new(name, default_callable, allow_blank)]).freeze
       end
     end
 
@@ -173,6 +174,10 @@ module CommandModel
 
       dependencies = dependencies.symbolize_keys
       self.class.dependencies.each do |dependency|
+        value = dependencies.fetch(dependency.name, dependency.default.call)
+        if value.blank? && !dependency.allow_blank
+          raise ArgumentError, "Dependency #{dependency.name} cannot be blank"
+        end
         self.send "#{dependency.name}=", dependencies.fetch(dependency.name, dependency.default.call)
       end
 

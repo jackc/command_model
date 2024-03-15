@@ -114,12 +114,12 @@ describe CommandModel::Model do
     let(:klass) { Class.new(CommandModel::Model) }
 
     it "creates an attribute reader" do
-      klass.dependency :foo
+      klass.dependency :foo, allow_blank: true
       expect(klass.new.methods).to include(:foo)
     end
 
     it "accepts multiple attributes" do
-      klass.dependency :foo, :bar
+      klass.dependency :foo, :bar, allow_blank: true
       expect(klass.new.methods).to include(:foo)
       expect(klass.new.methods).to include(:bar)
     end
@@ -268,6 +268,20 @@ describe CommandModel::Model do
       writer = StringIO.new
       m = klass.new({name: "John"}, stdout: writer)
       expect(m.stdout).to eq(writer)
+    end
+
+    it "raises error when dependency is missing" do
+      klass = Class.new(CommandModel::Model)
+      klass.dependency :stdout
+      klass.parameter :name
+      expect { klass.new name: "John" }.to raise_error(StandardError)
+    end
+
+    it "does not raise error when allow blank dependency is missing" do
+      klass = Class.new(CommandModel::Model)
+      klass.dependency :stdout, allow_blank: true
+      klass.parameter :name
+      expect { klass.new name: "John" }.to_not raise_error
     end
   end
 
