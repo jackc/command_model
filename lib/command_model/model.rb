@@ -169,9 +169,6 @@ module CommandModel
     # instance of the same class is passed in then the parameters are copied
     # to the new object.
     def initialize(parameters={}, dependencies={})
-      @type_conversion_errors = {}
-      set_parameters parameters
-
       dependencies = dependencies.symbolize_keys
       self.class.dependencies.each do |dependency|
         value = dependencies.fetch(dependency.name, dependency.default.call)
@@ -185,6 +182,9 @@ module CommandModel
       if unknown_dependencies.present?
         raise ArgumentError, "Unknown dependencies: #{bad_dependencies.join(", ")}"
       end
+
+      @type_conversion_errors = {}
+      set_parameters parameters
     end
 
     # Executes the command by calling the method +execute+ if the validations
