@@ -204,7 +204,9 @@ $ BUNDLE_GEMFILE=gemfiles/6.1.gemfile rake
 
 ## Version History
 
-* 2.1.0 - March 15, 2023
+* 2.1.1 - April 8, 2024
+    * Dependencies are set before parameters
+* 2.1.0 - March 15, 2024
     * Add dependencies to CommandModel::Model
     * Allow inheritance of CommandModel::Model
     * Require Ruby 3.2+
